@@ -1,9 +1,10 @@
-
 package br.com.gestaofuncionarios.service;
 
+import br.com.gestaofuncionarios.exception.FuncionarioNaoEncontradoException;
 import br.com.gestaofuncionarios.model.Funcionario;
 import br.com.gestaofuncionarios.repository.FuncionarioRepository;
 import br.com.gestaofuncionarios.repository.GeradorId;
+import br.com.gestaofuncionarios.validation.FuncionarioValidator;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,12 +13,16 @@ public class FuncionarioService {
 
     private final FuncionarioRepository funcionarioRepository;
     private final GeradorId geradorId;
+    private final FuncionarioValidator funcionarioValidator;
 
     public FuncionarioService(
-            FuncionarioRepository funcionarioRepository,
-            GeradorId geradorId) {
-        this.funcionarioRepository = funcionarioRepository;
-        this.geradorId = geradorId;
+        FuncionarioRepository funcionarioRepository,
+        GeradorId geradorId,
+        FuncionarioValidator funcionarioValidator) {
+
+    this.funcionarioRepository = funcionarioRepository;
+    this.geradorId = geradorId;
+    this.funcionarioValidator = funcionarioValidator;
     }
 
     public Funcionario cadastrar(
@@ -26,6 +31,11 @@ public class FuncionarioService {
             BigDecimal salario,
             String telefone,
             String endereco) {
+
+        funcionarioValidator.validarNome(nome);
+        funcionarioValidator.validarSalario(salario);
+        funcionarioValidator.validarTelefone(telefone);
+        funcionarioValidator.validarEndereco(endereco);
 
         Long id = geradorId.gerar();
 
@@ -44,8 +54,7 @@ public class FuncionarioService {
     public Funcionario buscarPorId(Long id) {
         return funcionarioRepository.buscarPorId(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
-                                "Funcionário não encontrado: " + id));
+                        new FuncionarioNaoEncontradoException(id));
     }
 
     public List<Funcionario> listarTodos() {
@@ -59,6 +68,11 @@ public class FuncionarioService {
             BigDecimal salario,
             String telefone,
             String endereco) {
+        
+        funcionarioValidator.validarNome(nome);
+        funcionarioValidator.validarSalario(salario);
+        funcionarioValidator.validarTelefone(telefone);
+        funcionarioValidator.validarEndereco(endereco);
 
         Funcionario funcionario = buscarPorId(id);
 
